@@ -19,6 +19,7 @@ import HeartBackground from "./components/HeartBackground";
 import Counter from "./components/Counter";
 import FloatingParticle from "./components/FloatingParticle";
 import TapFeedback from "./components/TapFeedback";
+import NeedleOverlay from "./components/NeedleOverlay";
 import { getTodayCount, registerPushToken, registerTap } from "./services/api";
 
 const { width, height } = Dimensions.get("window");
@@ -90,6 +91,7 @@ export default function App() {
   const [deviceId, setDeviceId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [tapEffects, setTapEffects] = useState<TapEffect[]>([]);
+  const [newNeedleIndex, setNewNeedleIndex] = useState(-1);
 
   const fadeIn = useRef(new Animated.Value(0)).current;
   const loadingPulse = useRef(new Animated.Value(0.3)).current;
@@ -120,8 +122,10 @@ export default function App() {
 
       try {
         const data = await getTodayCount(id);
-        setCount(data.count_today || 0);
-        tapCountRef.current = data.count_today || 0;
+        const todayCount = data.count_today || 0;
+        setCount(todayCount);
+        tapCountRef.current = todayCount;
+        setNewNeedleIndex(-1);
       } catch {
         setCount(0);
       }
@@ -144,9 +148,11 @@ export default function App() {
       const { locationX, locationY } = e.nativeEvent;
 
       tapCountRef.current += 1;
-      setCount(tapCountRef.current);
+      const currentCount = tapCountRef.current;
+      setCount(currentCount);
       setPulseHeart((p) => !p);
       setBounceTrigger((b) => !b);
+      setNewNeedleIndex(currentCount - 1);
 
       const newId = ++tapIdRef.current;
       setTapEffects((prev) => [
@@ -221,7 +227,9 @@ export default function App() {
           />
         ))}
 
-        <HeartBackground pulse={pulseHeart} />
+        <HeartBackground pulse={pulseHeart} darkenLevel={count} />
+
+        <NeedleOverlay count={count} newNeedleIndex={newNeedleIndex} />
 
         {tapEffects.map((t) => (
           <TapFeedback key={t.id} x={t.x} y={t.y} id={t.id} />

@@ -1,4 +1,4 @@
-const API_BASE = "http://82.112.245.99:8000/api";
+const API_BASE = "http://82.112.245.99:2345/api";
 
 export async function registerTap(deviceId: string) {
   const res = await fetch(`${API_BASE}/tap`, {

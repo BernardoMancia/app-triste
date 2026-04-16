@@ -2,13 +2,14 @@
 
 ## 🇧🇷 Português
 
-Um app Android minimalista para registrar momentos de tristeza. Toque na tela quando estiver triste — o app conta, salva e no final do mês te envia um resumo com estatísticas.
+Um app Android minimalista para registrar momentos de tristeza. Toque na tela quando estiver triste — cada toque crava uma agulha no coração, escurecendo-o progressivamente. No final do mês você recebe um resumo.
 
 ### Funcionalidades
 
-- **Toque para registrar**: cada toque na tela incrementa o contador
-- **Coração animado**: fundo com coração SVG estilo doodle com glow neon
-- **Reset diário**: o contador zera à meia-noite (horário de Brasília)
+- **Toque para registrar**: cada toque crava uma agulha no coração
+- **Coração que escurece**: quanto mais toques, mais escuro e apagado o coração fica
+- **Agulhas persistentes**: as agulhas do dia ficam visíveis enquanto o dia não acaba
+- **Reset diário**: o contador e as agulhas zeram à meia-noite (horário de Brasília)
 - **Dados persistidos**: todos os registros ficam salvos no servidor
 - **Resumo mensal**: notificação push no último dia do mês com estatísticas
 
@@ -21,25 +22,30 @@ Um app Android minimalista para registrar momentos de tristeza. Toque na tela qu
 | Banco | PostgreSQL |
 | Notificações | Expo Push Notifications |
 
-### Setup — Servidor
+### Setup — Servidor (VPS)
 
 ```bash
-cd server
-python -m venv venv
-source venv/bin/activate  # Linux
-pip install -r requirements.txt
-cp .env.example .env
-# Edite o .env com suas credenciais PostgreSQL
-uvicorn main:app --host 0.0.0.0 --port 8000
+# Na VPS (82.112.245.99):
+apt-get update && apt-get install -y git
+git clone https://github.com/BernardoMancia/app-triste.git /opt/app-triste
+chmod +x /opt/app-triste/server/deploy.sh
+bash /opt/app-triste/server/deploy.sh
 ```
 
-### Setup — Mobile
+**API rodando em:** `http://82.112.245.99:2345`
+
+Para atualizar após novos commits:
+```bash
+cd /opt/app-triste && git pull origin main && systemctl restart app-triste
+```
+
+### Setup — Mobile (dev)
 
 ```bash
 cd mobile
 npm install
 npx expo start
-# Escaneie o QR code com o app Expo Go no seu Android
+# Pressione "a" para abrir no emulador Android
 ```
 
 ### Build APK
@@ -53,13 +59,14 @@ npx eas build --platform android --profile preview
 
 ## 🇺🇸 English
 
-A minimalist Android app to track moments of sadness. Tap the screen when you feel sad — the app counts, saves, and sends you a monthly summary with statistics.
+A minimalist Android app to track moments of sadness. Tap the screen when you feel sad — each tap drives a needle into the heart, progressively darkening it. At the end of the month you receive a summary.
 
 ### Features
 
-- **Tap to register**: each screen tap increments the counter
-- **Animated heart**: SVG doodle-style heart background with neon glow
-- **Daily reset**: counter resets at midnight (Brazil timezone)
+- **Tap to register**: each tap drives a needle into the heart
+- **Darkening heart**: the more taps, the darker and more lifeless the heart becomes
+- **Persistent needles**: today's needles stay visible until the day ends
+- **Daily reset**: counter and needles reset at midnight (Brazil timezone)
 - **Persisted data**: all records are saved on the server
 - **Monthly summary**: push notification on the last day of the month
 
@@ -72,25 +79,30 @@ A minimalist Android app to track moments of sadness. Tap the screen when you fe
 | Database | PostgreSQL |
 | Notifications | Expo Push Notifications |
 
-### Setup — Server
+### Setup — Server (VPS)
 
 ```bash
-cd server
-python -m venv venv
-source venv/bin/activate  # Linux
-pip install -r requirements.txt
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
-uvicorn main:app --host 0.0.0.0 --port 8000
+# On VPS (82.112.245.99):
+apt-get update && apt-get install -y git
+git clone https://github.com/BernardoMancia/app-triste.git /opt/app-triste
+chmod +x /opt/app-triste/server/deploy.sh
+bash /opt/app-triste/server/deploy.sh
 ```
 
-### Setup — Mobile
+**API running at:** `http://82.112.245.99:2345`
+
+To update after new commits:
+```bash
+cd /opt/app-triste && git pull origin main && systemctl restart app-triste
+```
+
+### Setup — Mobile (dev)
 
 ```bash
 cd mobile
 npm install
 npx expo start
-# Scan the QR code with Expo Go on your Android device
+# Press "a" to open in Android emulator
 ```
 
 ### Build APK
