@@ -37,8 +37,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "90db8f96-48fa-4034-8d0e-46fb491fce15"
       }
-    }
+    },
+    "owner": "luke_arwolf"
   }
 }
