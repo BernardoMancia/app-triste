@@ -25,6 +25,7 @@ import { getTodayCount, registerPushToken, registerTap } from "./services/api";
 
 const { width, height } = Dimensions.get("window");
 const DEVICE_ID_KEY = "@app_triste_device_id";
+const COUNT_CACHE_KEY = "@app_triste_count_cache";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -44,6 +45,13 @@ function generateUUID(): string {
   });
 }
 
+function getTodayDateString(): string {
+  const now = new Date();
+  const offset = -3 * 60;
+  const brt = new Date(now.getTime() + (now.getTimezoneOffset() + offset) * 60000);
+  return `${brt.getFullYear()}-${String(brt.getMonth() + 1).padStart(2, "0")}-${String(brt.getDate()).padStart(2, "0")}`;
+}
+
 async function getDeviceId(): Promise<string> {
   let id = await AsyncStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
@@ -51,6 +59,27 @@ async function getDeviceId(): Promise<string> {
     await AsyncStorage.setItem(DEVICE_ID_KEY, id);
   }
   return id;
+}
+
+async function getCachedCount(): Promise<number> {
+  try {
+    const raw = await AsyncStorage.getItem(COUNT_CACHE_KEY);
+    if (!raw) return 0;
+    const cache = JSON.parse(raw);
+    if (cache.date === getTodayDateString()) {
+      return cache.count || 0;
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function setCachedCount(count: number): Promise<void> {
+  await AsyncStorage.setItem(
+    COUNT_CACHE_KEY,
+    JSON.stringify({ date: getTodayDateString(), count })
+  );
 }
 
 async function registerForPushNotifications(deviceId: string) {
@@ -125,15 +154,19 @@ export default function App() {
       const id = await getDeviceId();
       setDeviceId(id);
 
+      const cached = await getCachedCount();
+      setCount(cached);
+      tapCountRef.current = cached;
+      setNewNeedleIndex(-1);
+
       try {
         const data = await getTodayCount(id);
-        const todayCount = data.count_today || 0;
-        setCount(todayCount);
-        tapCountRef.current = todayCount;
-        setNewNeedleIndex(-1);
+        const serverCount = data.count_today || 0;
+        setCount(serverCount);
+        tapCountRef.current = serverCount;
+        await setCachedCount(serverCount);
       } catch (err) {
-        console.warn("Falha ao carregar contagem:", err);
-        setCount(0);
+        console.warn("Falha ao sincronizar contagem:", err);
       }
 
       await registerForPushNotifications(id);
@@ -160,6 +193,8 @@ export default function App() {
       setBounceTrigger((b) => !b);
       setNewNeedleIndex(currentCount - 1);
 
+      setCachedCount(currentCount);
+
       const newId = ++tapIdRef.current;
       setTapEffects((prev) => [
         ...prev.slice(-4),
@@ -174,6 +209,7 @@ export default function App() {
         const data = await registerTap(deviceId);
         tapCountRef.current = data.count_today;
         setCount(data.count_today);
+        await setCachedCount(data.count_today);
       } catch (err) {
         console.warn("Falha ao registrar tap:", err);
         Vibration.vibrate([0, 30, 50, 30]);
